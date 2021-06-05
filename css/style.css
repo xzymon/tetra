@@ -1,0 +1,48 @@
+body {
+  background-color: #000000;
+}
+
+#container {
+  border-width: 4px;
+  border-color: purple;
+}
+
+h5 {
+  background-color: #00ff00;
+}
+
+.plansza {
+  fill: #000000;
+  stroke: #3333cc;
+  stroke-width: 4;
+}
+
+.mars {
+  fill: #000000;
+  stroke: #cc6600;
+  stroke-width: 5;
+}
+
+.marsHex {
+  fill: #000000;
+  stroke: #cc6600;
+  stroke-width: 5;
+}
+
+.kragHex {
+  fill: #000000;
+  stroke: #664400;
+  stroke-width: 3;
+}
+
+.hex {
+  fill: rgba(0,0,0,0);
+  stroke: #ffb31a;
+  stroke-width: 3;
+}
+
+#hex1 {
+  fill: #00FFFF;
+  stroke: #00FF00;
+  stroke-width: 4;
+}
