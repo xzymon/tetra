@@ -1,0 +1,8 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+#boardContainer {
+	background: url("../img/tharsis_v1.png") no-repeat center center;
+}
