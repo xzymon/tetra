@@ -3,6 +3,37 @@
 	padding: 0;
 }
 
+body {
+	 background-color: #000000;
+ }
+
+h5 {
+	background-color: #00ff00;
+}
+
+canvas {
+	position: absolute;
+}
+
 #boardContainer {
+	position: relative;
+	/*
 	background: url("../img/tharsis_v1.png") no-repeat center center;
+	 */
+}
+
+#honeyComb {
+	z-index: 4;
+}
+
+#transientGameBoard {
+	z-index: 3;
+}
+
+#gameBoard {
+	z-index: 2;
+}
+
+#marsBackground {
+	z-index: 1;
 }

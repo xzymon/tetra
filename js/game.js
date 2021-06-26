@@ -1,14 +1,20 @@
 const boardContainer = document.getElementById('boardContainer');
+const marsBackground = document.getElementById('marsBackground');
 const gameBoard = document.getElementById('gameBoard');
-const ctx = gameBoard.getContext('2d');
+const transientGameBoard = document.getElementById('transientGameBoard');
+const honeyComb = document.getElementById('honeyComb');
+const heading = document.getElementById('mousePositionLabel');
 
 const gameArea = new GameArea(900);
 
-setSize(gameArea, boardContainer, gameBoard);
-//makeTransparent(ctx, gameArea.getWidth(), gameArea.getHeight());
+initializeBoardContainer();
+
+boardContainer.addEventListener('mousemove', handleMouseMoveOverGameBoard);
+
+
 
 document.addEventListener('DOMContentLoaded', (ev) => {
-	let canvas = document.getElementById('gameBoard');
+	let canvas = marsBackground;
 	let ctx = canvas.getContext('2d');
 	let imgObj = new Image();
 
@@ -30,46 +36,56 @@ document.addEventListener('DOMContentLoaded', (ev) => {
 		let bdy = (h - snh) / 2;
 		console.log(bdx);
 		console.log(bdy);
-		let aspect = nw / nh;
 
-
-
-		////ctx.drawImage(imgObj, (sw - snw) / 2, (sh - snh) / 2, (sw + snw) / 2, (sh + snh) / 2);
-		//ctx.drawImage(imgObj, 0, 0, snw, snh, (sw - snw) / 2, (sh - snh) / 2, (sw + snw) / 2, (sh + snh) / 2);
-		////ctx.drawImage(imgObj, 0, 0, nw, nw / aspect, (w - nw) / 2, (h - nh) / 2, (nw - ((w - nw) / 2)) * gameArea.scale, (nh - ((h - nh) / 2)) * gameArea.scale);
 		ctx.drawImage(imgObj, bdx, bdy, snw, snh);
-		drawMarsHexes(gameArea, gameBoard);
+		drawMarsHexes(gameArea, honeyComb);
+		//gameArea.frozeImage(ctx);
 	};
 
-	//imgObj.src = '../img/tharsis_v1.png';
-	//imgObj.src = '../img/hellas_v1.png';
-	imgObj.src = '../img/elysium_v1.png';
+	imgObj.src = '../img/tharsis_v2.png';
+	//imgObj.src = '../img/hellas_v2.png';
+	//imgObj.src = '../img/elysium_v2.png';
 });
 
-let heading = document.querySelector('h5');
-gameBoard.addEventListener('mousemove', runEvent);
 
 // Event handler
-function runEvent(e) {
+function handleMouseMoveOverGameBoard(e) {
 	//console.log(`EVENT TYPE: ${e.type}`);
 	let result = gameArea.hexPrescence.getPrescence(e.offsetX, e.offsetY);
 	heading.textContent = `MouseX: ${e.offsetX} MouseY: ${e.offsetY} Hex: ${result}`;
+
+	if (result === -1) {
+		console.log('Cleaning because of -1');
+		unmarkHex(gameArea, transientGameBoard, gameArea.currentHexId);
+		gameArea.currentHexId = result;
+	}
+	if (result > -1) {
+		if (gameArea.currentHexId != result) {
+			// odswiez obraz pod poprzednio zaznaczonym kafelkiem
+			console.log('Unmarking, but not -1');
+			unmarkHex(gameArea, transientGameBoard, gameArea.currentHexId);
+			// zaznacz obraz pod obecnym kafelkiem
+			gameArea.currentHexId = result;
+			markHex(gameArea, transientGameBoard, result);
+		}
+	}
+
 	//document.body.style.backgroundColor = `rgb(${e.offsetX}, ${e.offsetY}, 40)`;
 	e.preventDefault();
 }
 
-function drawMarsHexes(gameArea, gameBoard) {
+function drawMarsHexes(gameArea, canvasLayer) {
 	let hexLoop = 0;
 	let hexTile;
 	for (; hexLoop < gameArea.hexes.length; hexLoop++) {
 		hexTile = gameArea.hexes[hexLoop];
 		console.log('Drawing hex = ' + hexTile['oId'] + ' [' + hexTile['numericId'] + ']');
-		drawHexagon(gameArea, gameBoard, hexTile);
+		drawHexagonFrame(gameArea, canvasLayer, hexTile);
 	}
 }
 
-function drawHexagon(gameArea, gameBoard, hex) {
-	let ctx = gameBoard.getContext('2d');
+function drawHexagonFrame(gameArea, canvasLayer, hex) {
+	let ctx = canvasLayer.getContext('2d');
 	ctx.strokeStyle = '#ffb31a';
 	if (gameArea.scaleDenominator > 6) {
 		ctx.lineWidth = 3;
@@ -78,6 +94,31 @@ function drawHexagon(gameArea, gameBoard, hex) {
 	} else {
 		ctx.lineWidth = 1;
 	}
+	hexagonShape(ctx, hex);
+	ctx.stroke();
+}
+
+function markHex(gameArea, canvasLayer, hexId) {
+	if (hexId !== -1) {
+		let ctx = canvasLayer.getContext('2d');
+		let hex = gameArea.hexes[hexId];
+		console.log(`markHex (${hexId})`);
+		ctx.fillStyle = 'rgba(255, 179, 26, 0.3)';
+		hexagonShape(ctx, hex);
+		ctx.fill();
+	}
+}
+
+function unmarkHex(gameArea, canvasLayer, hexId) {
+	if (hexId !== -1) {
+		let ctx = canvasLayer.getContext('2d');
+		let hex = gameArea.hexes[hexId];
+		console.log(`unmarkHex (${hexId})`);
+		ctx.clearRect(hex.xleft, hex.ytop, hex.xright - hex.xleft, hex.ybottom - hex.ytop);
+	}
+}
+
+function hexagonShape(ctx, hex) {
 	ctx.beginPath();
 	ctx.moveTo(hex.xmid, hex.ytop);
 	ctx.lineTo(hex.xright, hex.yup);
@@ -86,15 +127,23 @@ function drawHexagon(gameArea, gameBoard, hex) {
 	ctx.lineTo(hex.xleft,hex.ydown);
 	ctx.lineTo(hex.xleft,hex.yup);
 	ctx.closePath();
-	ctx.stroke();
 }
 
-function setSize(gameArea, boardContainer, gameBoard) {
+function setSize(gameArea, boardContainer, marsBackground, gameBoard, transientGameBoard, honeyComb) {
 	boardContainer.height = gameArea.height;
 	boardContainer.width = gameArea.width;
 
+	marsBackground.height = gameArea.height;
+	marsBackground.width = gameArea.width;
+
 	gameBoard.height = gameArea.height;
 	gameBoard.width = gameArea.width;
+
+	transientGameBoard.height = gameArea.height;
+	transientGameBoard.width = gameArea.width;
+
+	honeyComb.height = gameArea.height;
+	honeyComb.width = gameArea.width;
 }
 
 function makeTransparent(ctx, w, h) {
@@ -107,7 +156,7 @@ function makeTransparent(ctx, w, h) {
 
 function GameArea(baseDimention) {
 	this.baseDimention = baseDimention;
-	this.scaleDenominator = 9; // 3-9 - mnoznik - sluzy do skalowania calosci
+	this.scaleDenominator = 7; // 3-9 - mnoznik - sluzy do skalowania calosci
 	this.scaleNumerator = 9;
 	this.scale = this.scaleDenominator / this.scaleNumerator;
 	this.height = this.baseDimention * this.scale;
@@ -119,6 +168,8 @@ function GameArea(baseDimention) {
 	this.marsR = this.marsCY - this.margin;
 // promien hex'a
 	this.hexR = this.marsR /8;
+
+	this.currentHexId = -1;
 
 	this.hexPrescence = new GameHexPrescence(Math.round(this.width), Math.round(this.height));
 	this.hexes = new HexArithmetic().generateCentralHexCoordinates('tm', this.marsCX, this.marsCY, this.marsR, this.hexR);
@@ -484,4 +535,10 @@ function HexArithmetic() {
 
 		return coords;
 	}
+}
+
+function initializeBoardContainer() {
+	setSize(gameArea, boardContainer, marsBackground, gameBoard, transientGameBoard, honeyComb);
+
+
 }
