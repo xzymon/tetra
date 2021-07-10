@@ -6,8 +6,10 @@ const honeyComb = document.getElementById('honeyComb');
 const heading = document.getElementById('mousePositionLabel');
 
 const gameArea = new GameArea(900);
+const gameState = new GameState();
 
 initializeBoardContainer();
+initializeState();
 
 boardContainer.addEventListener('mousemove', handleMouseMoveOverGameBoard);
 
@@ -42,9 +44,17 @@ document.addEventListener('DOMContentLoaded', (ev) => {
 		//gameArea.frozeImage(ctx);
 	};
 
-	imgObj.src = '../img/tharsis_v2.png';
-	//imgObj.src = '../img/hellas_v2.png';
-	//imgObj.src = '../img/elysium_v2.png';
+	if (gameState.chosenBoardName === gameState.getTharsisName()) {
+		imgObj.src = '../img/tharsis_v2.png';
+	}
+
+	if (gameState.chosenBoardName === gameState.getHellasName()) {
+		imgObj.src = '../img/hellas_v2.png';
+	}
+
+	if (gameState.chosenBoardName === gameState.getElysiumName()) {
+		imgObj.src = '../img/elysium_v2.png';
+	}
 });
 
 
@@ -66,7 +76,7 @@ function handleMouseMoveOverGameBoard(e) {
 			unmarkHex(gameArea, transientGameBoard, gameArea.currentHexId);
 			// zaznacz obraz pod obecnym kafelkiem
 			gameArea.currentHexId = result;
-			markHex(gameArea, transientGameBoard, result);
+			markHex(gameArea, transientGameBoard, result, gameState);
 		}
 	}
 
@@ -98,7 +108,7 @@ function drawHexagonFrame(gameArea, canvasLayer, hex) {
 	ctx.stroke();
 }
 
-function markHex(gameArea, canvasLayer, hexId) {
+function markHex(gameArea, canvasLayer, hexId, gameState) {
 	if (hexId !== -1) {
 		let ctx = canvasLayer.getContext('2d');
 		let hex = gameArea.hexes[hexId];
@@ -106,6 +116,17 @@ function markHex(gameArea, canvasLayer, hexId) {
 		ctx.fillStyle = 'rgba(255, 179, 26, 0.3)';
 		hexagonShape(ctx, hex);
 		ctx.fill();
+		let neighbours = gameState.boardState.tiles[hexId].neighbourhood;
+		console.log('markHex neighbours:');
+		console.log(neighbours);
+		for (let nbIter = 0; nbIter < neighbours.length; nbIter++) {
+			let nbHex = gameArea.hexes[neighbours[nbIter]];
+			console.log('neighbour of hex:');
+			console.log(nbHex);
+			ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+			hexagonShape(ctx, nbHex);
+			ctx.fill();
+		}
 	}
 }
 
@@ -115,6 +136,11 @@ function unmarkHex(gameArea, canvasLayer, hexId) {
 		let hex = gameArea.hexes[hexId];
 		console.log(`unmarkHex (${hexId})`);
 		ctx.clearRect(hex.xleft, hex.ytop, hex.xright - hex.xleft, hex.ybottom - hex.ytop);
+		let neighbours = gameState.boardState.tiles[hexId].neighbourhood;
+		for (let nbIter = 0; nbIter < neighbours.length; nbIter++) {
+			let nbHex = gameArea.hexes[neighbours[nbIter]];
+			ctx.clearRect(nbHex.xleft, nbHex.ytop, nbHex.xright - nbHex.xleft, nbHex.ybottom - nbHex.ytop);
+		}
 	}
 }
 
@@ -537,6 +563,12 @@ function HexArithmetic() {
 	}
 }
 
+function initializeState() {
+	//gameState.initTharsis();
+	gameState.initHellas();
+	//gameState.initElysium();
+}
+
 function initializeBoardContainer() {
 	setSize(gameArea, boardContainer, marsBackground, gameBoard, transientGameBoard, honeyComb);
 
@@ -547,6 +579,14 @@ function BoardState() {
 	this.tiles = new Array();
 	this.pushTile = function(tileState) {
 		this.tiles.push(tileState);
+	}
+	this.setNeighbourhood = function(tileId, neighbourhoodArray) {
+		if(typeof this.tiles[tileId] === 'undefined') {
+			console.log("Element {" + tileId + "} is undefined!")
+		}
+		else {
+			this.tiles[tileId].neighbourhood = neighbourhoodArray;
+		}
 	}
 }
 
@@ -583,7 +623,7 @@ function creditTileCost(amount) {
 
 function creditHexapleCosts() {
 	let result = new TileCosts();
-	result.pushBonus(creditTileCost(6));
+	result.pushCost(creditTileCost(6));
 	return result;
 }
 
@@ -829,6 +869,8 @@ function createTharsisBoardState() {
 	result.pushTile(new TileState(61, "Phobos", null, null, phobosRestriction()));
 	result.pushTile(new TileState(62, "Ganymede", null, null, ganymedeRestriction()));
 
+	setNeighbours(result);
+
 	return result;
 }
 
@@ -917,6 +959,8 @@ function createHellasBoardState() {
 	//moon colonies
 	result.pushTile(new TileState(61, "Phobos", null, null, phobosRestriction()));
 	result.pushTile(new TileState(62, "Ganymede", null, null, ganymedeRestriction()));
+
+	setNeighbours(result);
 
 	return result;
 }
@@ -1007,5 +1051,105 @@ function createElysiumBoardState() {
 	result.pushTile(new TileState(61, "Phobos", null, null, phobosRestriction()));
 	result.pushTile(new TileState(62, "Ganymede", null, null, ganymedeRestriction()));
 
+	setNeighbours(result);
+
 	return result;
+}
+
+function setNeighbours(boardState) {
+	boardState.setNeighbourhood(0, [1, 5, 6]);
+	boardState.setNeighbourhood(1, [0, 2, 6, 7]);
+	boardState.setNeighbourhood(2, [1, 3, 7, 8]);
+	boardState.setNeighbourhood(3, [2, 4, 8, 9]);
+	boardState.setNeighbourhood(4, [3, 9, 10]);
+
+	boardState.setNeighbourhood(5, [0, 6, 11, 12]);
+	boardState.setNeighbourhood(6, [0, 1, 5, 7, 12, 13]);
+	boardState.setNeighbourhood(7, [1, 2, 6, 8, 13, 14]);
+	boardState.setNeighbourhood(8, [2, 3, 7, 9, 14, 15]);
+	boardState.setNeighbourhood(9, [3, 4, 8, 10, 15, 16]);
+	boardState.setNeighbourhood(10, [4, 9, 16, 17]);
+
+	boardState.setNeighbourhood(11, [5, 12, 18, 19]);
+	boardState.setNeighbourhood(12, [5, 6, 11, 13, 19, 20]);
+	boardState.setNeighbourhood(13, [6, 7, 12, 14, 20, 21]);
+	boardState.setNeighbourhood(14, [7, 8, 13, 15, 21, 22]);
+	boardState.setNeighbourhood(15, [8, 9, 14, 16, 22, 23]);
+	boardState.setNeighbourhood(16, [9, 10, 15, 17, 23, 24]);
+	boardState.setNeighbourhood(17, [10, 16, 24, 25]);
+
+	boardState.setNeighbourhood(18, [11, 19, 26, 27]);
+	boardState.setNeighbourhood(19, [11, 12, 18, 20, 27, 28]);
+	boardState.setNeighbourhood(20, [12, 13, 19, 21, 28, 29]);
+	boardState.setNeighbourhood(21, [13, 14, 20, 22, 29, 30]);
+	boardState.setNeighbourhood(22, [14, 15, 21, 23, 30, 31]);
+	boardState.setNeighbourhood(23, [15, 16, 22, 24, 31, 32]);
+	boardState.setNeighbourhood(24, [16, 17, 23, 25, 32, 33]);
+	boardState.setNeighbourhood(25, [17, 24, 33, 34]);
+
+	boardState.setNeighbourhood(26, [18, 27, 35]);
+	boardState.setNeighbourhood(27, [18, 19, 26, 28, 35, 36]);
+	boardState.setNeighbourhood(28, [19, 20, 27, 29, 36, 37]);
+	boardState.setNeighbourhood(29, [20, 21, 28, 30, 37, 38]);
+	boardState.setNeighbourhood(30, [21, 22, 29, 31, 38, 39]);
+	boardState.setNeighbourhood(31, [22, 23, 30, 32, 39, 40]);
+	boardState.setNeighbourhood(32, [23, 24, 31, 33, 40, 41]);
+	boardState.setNeighbourhood(33, [24, 25, 32, 34, 41, 42]);
+	boardState.setNeighbourhood(34, [25, 33, 42]);
+
+	boardState.setNeighbourhood(35, [26, 27, 36, 43]);
+	boardState.setNeighbourhood(36, [27, 28, 35, 37, 43, 44]);
+	boardState.setNeighbourhood(37, [28, 29, 36, 38, 44, 45]);
+	boardState.setNeighbourhood(38, [29, 30, 37, 39, 45, 46]);
+	boardState.setNeighbourhood(39, [30, 31, 38, 40, 46, 47]);
+	boardState.setNeighbourhood(40, [31, 32, 39, 41, 47, 48]);
+	boardState.setNeighbourhood(41, [32, 33, 40, 42, 48, 49]);
+	boardState.setNeighbourhood(42, [33, 34, 41, 49]);
+
+	boardState.setNeighbourhood(43, [35, 36, 44, 50]);
+	boardState.setNeighbourhood(44, [36, 37, 43, 45, 50, 51]);
+	boardState.setNeighbourhood(45, [37, 38, 44, 46, 51, 52]);
+	boardState.setNeighbourhood(46, [38, 39, 45, 47, 52, 53]);
+	boardState.setNeighbourhood(47, [39, 40, 46, 48, 53, 54]);
+	boardState.setNeighbourhood(48, [40, 41, 47, 49, 54, 55]);
+	boardState.setNeighbourhood(49, [41, 42, 48, 55]);
+
+	boardState.setNeighbourhood(50, [43, 44, 51, 56]);
+	boardState.setNeighbourhood(51, [44, 45, 50, 52, 56, 57]);
+	boardState.setNeighbourhood(52, [45, 46, 51, 53, 57, 58]);
+	boardState.setNeighbourhood(53, [46, 47, 52, 54, 58, 59]);
+	boardState.setNeighbourhood(54, [47, 48, 53, 55, 59, 60]);
+	boardState.setNeighbourhood(55, [48, 49, 54, 60]);
+
+	boardState.setNeighbourhood(56, [50, 51, 57]);
+	boardState.setNeighbourhood(57, [51, 52, 56, 58]);
+	boardState.setNeighbourhood(58, [52, 53, 57, 59]);
+	boardState.setNeighbourhood(59, [53, 54, 58, 60]);
+	boardState.setNeighbourhood(60, [54, 55, 59]);
+}
+
+function GameState() {
+	this.boardState = null;
+	this.chosenBoardName = null;
+	this.getTharsisName = function() {
+		return 'Tharsis';
+	}
+	this.getHellasName = function() {
+		return 'Hellas';
+	}
+	this.getElysiumName = function() {
+		return 'Elysium';
+	}
+	this.initTharsis = function() {
+		this.chosenBoardName = this.getTharsisName();
+		this.boardState = createTharsisBoardState();
+	}
+	this.initHellas = function() {
+		this.chosenBoardName = this.getHellasName();
+		this.boardState = createHellasBoardState();
+	}
+	this.initElysium = function() {
+		this.chosenBoardName = this.getElysiumName();
+		this.boardState = createElysiumBoardState();
+	}
 }
