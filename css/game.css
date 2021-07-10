@@ -23,14 +23,18 @@ canvas {
 }
 
 #honeyComb {
-	z-index: 4;
+	z-index: 5;
 }
 
 #transientGameBoard {
-	z-index: 3;
+	z-index: 4;
 }
 
 #gameBoard {
+	z-index: 3;
+}
+
+#constraintsBoard {
 	z-index: 2;
 }
 

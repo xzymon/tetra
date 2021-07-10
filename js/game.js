@@ -1,5 +1,6 @@
 const boardContainer = document.getElementById('boardContainer');
 const marsBackground = document.getElementById('marsBackground');
+const constraintsBoard = document.getElementById('constraintsBoard');
 const gameBoard = document.getElementById('gameBoard');
 const transientGameBoard = document.getElementById('transientGameBoard');
 const honeyComb = document.getElementById('honeyComb');
@@ -8,8 +9,10 @@ const heading = document.getElementById('mousePositionLabel');
 const gameArea = new GameArea(900);
 const gameState = new GameState();
 
-initializeBoardContainer();
+const marsAreasLastIndex = 60;
+
 initializeState();
+initializeBoardContainer();
 
 boardContainer.addEventListener('mousemove', handleMouseMoveOverGameBoard);
 
@@ -89,7 +92,7 @@ function drawMarsHexes(gameArea, canvasLayer) {
 	let hexTile;
 	for (; hexLoop < gameArea.hexes.length; hexLoop++) {
 		hexTile = gameArea.hexes[hexLoop];
-		console.log('Drawing hex = ' + hexTile['oId'] + ' [' + hexTile['numericId'] + ']');
+		//console.log('Drawing hex = ' + hexTile['oId'] + ' [' + hexTile['numericId'] + ']');
 		drawHexagonFrame(gameArea, canvasLayer, hexTile);
 	}
 }
@@ -155,12 +158,15 @@ function hexagonShape(ctx, hex) {
 	ctx.closePath();
 }
 
-function setSize(gameArea, boardContainer, marsBackground, gameBoard, transientGameBoard, honeyComb) {
+function setSize(gameArea, boardContainer, marsBackground, constraintsBoard, gameBoard, transientGameBoard, honeyComb) {
 	boardContainer.height = gameArea.height;
 	boardContainer.width = gameArea.width;
 
 	marsBackground.height = gameArea.height;
 	marsBackground.width = gameArea.width;
+
+	constraintsBoard.height = gameArea.height;
+	constraintsBoard.width = gameArea.width;
 
 	gameBoard.height = gameArea.height;
 	gameBoard.width = gameArea.width;
@@ -170,6 +176,26 @@ function setSize(gameArea, boardContainer, marsBackground, gameBoard, transientG
 
 	honeyComb.height = gameArea.height;
 	honeyComb.width = gameArea.width;
+}
+
+function drawConstraints(canvasLayer, gameState) {
+	//draw ocean-restricted areas
+	let ctx = canvasLayer.getContext('2d');
+	let tiles = gameState.boardState.tiles;
+	for (let tileId = 0; tileId < marsAreasLastIndex + 1; tileId++) {
+		let restriction = tiles[tileId].restriction;
+		let toCompare = oceanRestriction();
+		console.log(restriction);
+		if (restriction != null && restriction.category === toCompare.category) {
+			let hex = gameArea.hexes[tileId];
+			console.log(`drawConstraints (${tileId})`);
+			ctx.fillStyle = 'rgba(0, 153, 255, 0.2)';
+			hexagonShape(ctx, hex);
+			ctx.fill();
+		}
+	}
+
+
 }
 
 function makeTransparent(ctx, w, h) {
@@ -238,8 +264,8 @@ function GameHexPrescence(areaX, areaY) {
 	}
 
 	this.setHexPrescence = function (hex) {
-		console.log('hex');
-		console.log(hex);
+		//console.log('hex');
+		//console.log(hex);
 
 		this.setHexPrescenceTop(hex.numericId, hex.xmid, hex.ytop, hex.xleft, hex.yup, hex.xright, hex.yup);
 		this.setHexPrescenceCentral(hex.numericId, hex.xleft, hex.yup, hex.xright, hex.ydown);
@@ -318,7 +344,7 @@ function GameHexPrescence(areaX, areaY) {
 		let primUpY = Math.ceil(upY);
 		let primDownY = Math.floor(downY);
 		for (let cursor = primUpY; cursor < primDownY; cursor++) {
-			console.log('Line :' + cursor + ' : ' + primLeftX + ' - ' + primRightX);
+			//console.log('Line :' + cursor + ' : ' + primLeftX + ' - ' + primRightX);
 			this.setPrescenceHorizontalLine(val, cursor, primLeftX, primRightX);
 		}
 	}
@@ -334,10 +360,10 @@ function GameHexPrescence(areaX, areaY) {
 
 		// wyznaczenie wartosci zaokraglonych dla odpowiednich wierzcholkow
 		let primBottomY = Math.floor(bottomY);
-		console.log('leftY, primLeftY');
-		console.log(leftY);
+		//console.log('leftY, primLeftY');
+		//console.log(leftY);
 		let primLeftY = Math.floor(leftY);
-		console.log(primLeftY);
+		//console.log(primLeftY);
 		let primRightY = Math.floor(leftY);
 
 		// mapa na 2 tablicach - po lewej stronie :D
@@ -542,16 +568,16 @@ function HexArithmetic() {
 		let count = 0;
 		// idziemy po kolei po liniach hex'ow
 		for (; lineLoop < marsHexes.length; lineLoop++) {
-			console.log('Line: ' + lineLoop)
+			//console.log('Line: ' + lineLoop)
 			line = marsHexes[lineLoop];
-			console.log(line);
+			//console.log(line);
 			lineY = line['y'];
-			console.log(lineY);
+			//console.log(lineY);
 			lineXes = line['xes'];
-			console.log(lineXes);
+			//console.log(lineXes);
 			for (hexLoop = 0; hexLoop < lineXes.length; hexLoop++) {
 				hexId = idPrefix.concat(lineLoop).concat(hexLoop);
-				console.log('Drawing hex = ' + hexId);
+				//console.log('Drawing hex = ' + hexId);
 				coords.push(new HexTileCoordinates(hexId, count, lineXes[hexLoop], lineY, hexR));
 				//drawHexagon(svgElem, hexId, classForHexes, lineXes[hexLoop], lineY, hexR);
 				//drawCircle(svgElem, hexId, classForHexes, lineXes[hexLoop], lineY, hexR);
@@ -565,13 +591,13 @@ function HexArithmetic() {
 
 function initializeState() {
 	//gameState.initTharsis();
-	gameState.initHellas();
-	//gameState.initElysium();
+	//gameState.initHellas();
+	gameState.initElysium();
 }
 
 function initializeBoardContainer() {
-	setSize(gameArea, boardContainer, marsBackground, gameBoard, transientGameBoard, honeyComb);
-
+	setSize(gameArea, boardContainer, marsBackground, constraintsBoard, gameBoard, transientGameBoard, honeyComb);
+	drawConstraints(constraintsBoard, gameState);
 
 }
 
