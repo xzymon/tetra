@@ -557,6 +557,12 @@ function TileState(tileId, tileName, tileCosts, tileBonuses, tileRestriction) {
 	this.costs = tileCosts;
 	this.bonuses = tileBonuses;
 	this.restriction = tileRestriction;
+	this.ownership = new TileOwnership(null, null);
+}
+
+function TileOwnership(playerId, areaKind) {
+	this.owner = playerId;
+	this.areaKind = areaKind;
 }
 
 function TileCosts() {
@@ -573,6 +579,12 @@ function TileCost(costAmount, costResource) {
 
 function creditTileCost(amount) {
 	return new TileCost(amount, "CREDIT");
+}
+
+function creditHexapleCosts() {
+	let result = new TileCosts();
+	result.pushBonus(creditTileCost(6));
+	return result;
 }
 
 function TileBonuses() {
@@ -611,6 +623,13 @@ function plantTitaniumBonuses() {
 	let result = new TileBonuses();
 	result.pushBonus(plantTileBonus(1));
 	result.pushBonus(titaniumTileBonus(1));
+	return result;
+}
+
+function plantCardBonuses() {
+	let result = new TileBonuses();
+	result.pushBonus(plantTileBonus(1));
+	result.pushBonus(cardTileBonus(1));
 	return result;
 }
 
@@ -656,6 +675,24 @@ function cardTripleBonuses() {
 	return result;
 }
 
+function heatDoubleBonuses() {
+	let result = new TileBonuses();
+	result.pushBonus(heatTileBonus(2));
+	return result;
+}
+
+function heatTripleBonuses() {
+	let result = new TileBonuses();
+	result.pushBonus(heatTileBonus(3));
+	return result;
+}
+
+function oceanSingleBonuses() {
+	let result = new TileBonuses();
+	result.pushBonus(oceanTileBonus(1));
+	return result;
+}
+
 function TileBonus(bonusAmount, bonusResource) {
 	this.amount = bonusAmount;
 	this.resource = bonusResource;
@@ -683,6 +720,10 @@ function heatTileBonus(amount) {
 
 function cardTileBonus(amount) {
 	return new TileBonus(amount, "CARD");
+}
+
+function oceanTileBonus(amount) {
+	return new TileBonus(amount, "OCEAN");
 }
 
 function TileRestriction(isRestricted, tileCategory) {
@@ -795,83 +836,83 @@ function createHellasBoardState() {
 	let result = new BoardState();
 
 	//line 0
-	result.pushTile(new TileState(0, "", null, null, null));
-	result.pushTile(new TileState(1, "", null, null, null));
-	result.pushTile(new TileState(2, "", null, null, null));
-	result.pushTile(new TileState(3, "", null, null, null));
-	result.pushTile(new TileState(4, "", null, null, null));
+	result.pushTile(new TileState(0, "Schiaparelli", null, plantDoubleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(1, null, null, plantDoubleBonuses(), null));
+	result.pushTile(new TileState(2, "Dawes", null, plantDoubleBonuses(), null));
+	result.pushTile(new TileState(3, null, null, plantSteelBonuses(), null));
+	result.pushTile(new TileState(4, "Syrtis Major Planum 1", null, plantSingleBonuses(), null));
 
 	//line 1
-	result.pushTile(new TileState(5, "", null, null, null));
-	result.pushTile(new TileState(6, "", null, null, null));
-	result.pushTile(new TileState(7, "", null, null, null));
-	result.pushTile(new TileState(8, "", null, null, null));
-	result.pushTile(new TileState(9, "", null, null, null));
-	result.pushTile(new TileState(10, "", null, null, null));
+	result.pushTile(new TileState(5, "Margaritifer Terra 3", null, plantDoubleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(6, null, null, plantDoubleBonuses(), null));
+	result.pushTile(new TileState(7, null, null, plantSingleBonuses(), null));
+	result.pushTile(new TileState(8, null, null, plantSteelBonuses(), null));
+	result.pushTile(new TileState(9, "Huygens", null, plantSingleBonuses(), null));
+	result.pushTile(new TileState(10, "Tyrrhena Terra 1", null, plantSingleBonuses(), null));
 
 	//line 2
-	result.pushTile(new TileState(11, "", null, null, null));
-	result.pushTile(new TileState(12, "", null, null, null));
-	result.pushTile(new TileState(13, "", null, null, null));
-	result.pushTile(new TileState(14, "", null, null, null));
-	result.pushTile(new TileState(15, "", null, null, null));
-	result.pushTile(new TileState(16, "", null, null, null));
-	result.pushTile(new TileState(17, "", null, null, null));
+	result.pushTile(new TileState(11, "Margaritifer Terra 2", null, plantSingleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(12, null, null, plantSingleBonuses(), null));
+	result.pushTile(new TileState(13, null, null, steelSingleBonuses(), null));
+	result.pushTile(new TileState(14, null, null, steelSingleBonuses(), null));
+	result.pushTile(new TileState(15, "Hellespontus Montes 2", null, null, null));
+	result.pushTile(new TileState(16, null, null, plantDoubleBonuses(), null));
+	result.pushTile(new TileState(17, "Tyrrhena Terra 2", null, plantCardBonuses(), null));
 
 	//line 3
-	result.pushTile(new TileState(18, "", null, null, null));
-	result.pushTile(new TileState(19, "", null, null, null));
-	result.pushTile(new TileState(20, "", null, null, null));
-	result.pushTile(new TileState(21, "", null, null, null));
-	result.pushTile(new TileState(22, "", null, null, null));
-	result.pushTile(new TileState(23, "", null, null, null));
-	result.pushTile(new TileState(24, "", null, null, null));
-	result.pushTile(new TileState(25, "", null, null, null));
+	result.pushTile(new TileState(18, "Margaritifer Terra 1", null, plantSingleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(19, null, null, plantSingleBonuses(), null));
+	result.pushTile(new TileState(20, "Noachis Terra 2", null, steelSingleBonuses(), null));
+	result.pushTile(new TileState(21, null, null, steelDoubleBonuses(), null));
+	result.pushTile(new TileState(22, "Hellespontus Montes 1", null, steelSingleBonuses(), null));
+	result.pushTile(new TileState(23, "Hellas Planitia 1", null, plantSingleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(24, "Hellas Planitia 2", null, plantSingleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(25, "Tyrrhena Terra 3", null, plantSingleBonuses(), null));
 
 	//line 4
-	result.pushTile(new TileState(26, "", null, null, null));
-	result.pushTile(new TileState(27, "", null, null, null));
-	result.pushTile(new TileState(28, "", null, null, null));
-	result.pushTile(new TileState(29, "", null, null, null));
-	result.pushTile(new TileState(30, "", null, null, null));
-	result.pushTile(new TileState(31, "", null, null, null));
-	result.pushTile(new TileState(32, "", null, null, null));
-	result.pushTile(new TileState(33, "", null, null, null));
-	result.pushTile(new TileState(34, "", null, null, null));
+	result.pushTile(new TileState(26, "Nirgal Vallis 1", null, cardSingleBonuses(), null));
+	result.pushTile(new TileState(27, null, null, null, null));
+	result.pushTile(new TileState(28, "Noachis Terra 1", null, null, null));
+	result.pushTile(new TileState(29, "Kaiser", null, steelDoubleBonuses(), null));
+	result.pushTile(new TileState(30, "Proctor", null, null, null));
+	result.pushTile(new TileState(31, "Hellas Planitia 3", null, cardSingleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(32, "Hellas Planitia 4", null, heatTripleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(33, "Hellas Planitia 5", null, null, oceanRestriction()));
+	result.pushTile(new TileState(34, null, null, plantSingleBonuses(), null));
 
 	//line 5
-	result.pushTile(new TileState(35, "", null, null, null));
-	result.pushTile(new TileState(36, "", null, null, null));
-	result.pushTile(new TileState(37, "", null, null, null));
-	result.pushTile(new TileState(38, "", null, null, null));
-	result.pushTile(new TileState(39, "", null, null, null));
-	result.pushTile(new TileState(40, "", null, null, null));
-	result.pushTile(new TileState(41, "", null, null, null));
-	result.pushTile(new TileState(42, "", null, null, null));
+	result.pushTile(new TileState(35, "Nirgal Vallis 2", null, titaniumSingleBonuses(), null));
+	result.pushTile(new TileState(36, "Green", null, null, null));
+	result.pushTile(new TileState(37, "Roddenberry", null, steelSingleBonuses(), null));
+	result.pushTile(new TileState(38, null, null, null, null));
+	result.pushTile(new TileState(39, null, null, null, null));
+	result.pushTile(new TileState(40, "Hellas Planitia 6", null, null, oceanRestriction()));
+	result.pushTile(new TileState(41, "Hellas Planitia 7", null, steelSingleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(42, "Promethei Terra 3", null, null, null));
 
 	//line 6
-	result.pushTile(new TileState(43, "", null, null, null));
-	result.pushTile(new TileState(44, "", null, null, null));
-	result.pushTile(new TileState(45, "", null, null, null));
-	result.pushTile(new TileState(46, "", null, null, null));
-	result.pushTile(new TileState(47, "", null, null, null));
-	result.pushTile(new TileState(48, "", null, null, null));
-	result.pushTile(new TileState(49, "", null, null, null));
+	result.pushTile(new TileState(43, "Argyre Planitia", null, titaniumDoubleBonuses(), oceanRestriction()));
+	result.pushTile(new TileState(44, "Phillips", null, null, null));
+	result.pushTile(new TileState(45, "Sisyphi Planum 1", null, null, null));
+	result.pushTile(new TileState(46, "Sisyphi Planum 2", null, cardSingleBonuses(), null));
+	result.pushTile(new TileState(47, "Malea Planum", null, null, null));
+	result.pushTile(new TileState(48, "Bernard", null, null, null));
+	result.pushTile(new TileState(49, "Promethei Terra 2", null, titaniumSingleBonuses(), null));
 
 	//line 7
-	result.pushTile(new TileState(50, "", null, null, null));
-	result.pushTile(new TileState(51, "", null, null, null));
-	result.pushTile(new TileState(52, "", null, null, null));
-	result.pushTile(new TileState(53, "", null, null, null));
-	result.pushTile(new TileState(54, "", null, null, null));
-	result.pushTile(new TileState(55, "", null, null, null));
+	result.pushTile(new TileState(50, "Charitum Montes", null, steelSingleBonuses(), null));
+	result.pushTile(new TileState(51, "Schmidt", null, cardSingleBonuses(), null));
+	result.pushTile(new TileState(52, "Australe Montes", null, heatDoubleBonuses(), null));
+	result.pushTile(new TileState(53, "Chasma Australe", null, heatDoubleBonuses(), null));
+	result.pushTile(new TileState(54, null, null, titaniumSingleBonuses(), null));
+	result.pushTile(new TileState(55, "Promethei Terra 1", null, titaniumSingleBonuses(), null));
 
 	//line 8
-	result.pushTile(new TileState(56, "", null, null, null));
-	result.pushTile(new TileState(57, "", null, null, null));
-	result.pushTile(new TileState(58, "", null, null, null));
-	result.pushTile(new TileState(59, "", null, null, null));
-	result.pushTile(new TileState(60, "", null, null, null));
+	result.pushTile(new TileState(56, null, null, null, null));
+	result.pushTile(new TileState(57, "Stoney", null, heatDoubleBonuses(), null));
+	result.pushTile(new TileState(58, "Biegun Poludniowy", creditHexapleCosts(), oceanSingleBonuses(), null));
+	result.pushTile(new TileState(59, null, null, heatDoubleBonuses(), null));
+	result.pushTile(new TileState(60, null, null, null, null));
 
 	//moon colonies
 	result.pushTile(new TileState(61, "Phobos", null, null, phobosRestriction()));
