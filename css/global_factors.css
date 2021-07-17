@@ -1,0 +1,105 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	background-color: #000000;
+}
+
+#global_factors {
+	height: 690px;
+	width: 286px;
+}
+
+#rehydration {
+	height: 200px;
+	width: 285px;
+	background-color: #000044;
+	border: 1px solid #00FFFF;
+}
+
+.neighbours {
+	display: inline-block;
+}
+
+#temperature {
+	position: relative;
+	height: 490px;
+	width: 140px;
+	background-color: #000044;
+	border: 1px solid #00FFFF;
+}
+
+#temperature_stake {
+	margin: auto;
+	width: 62px;
+	height: 438px;
+	border-left: 1px solid #000044;
+	border-right: 1px solid #000044;
+}
+
+#thermo_max {
+	background-color: #FF0000;
+	height: 30px;
+	border-top-left-radius: 30px;
+	border-top-right-radius: 30px;
+}
+
+.thermo_standard {
+	height: 60px;
+}
+
+#thermo28 {
+	background-color: #FF0000;
+}
+
+#thermo_42 {
+	background: linear-gradient(to bottom, #ff0000 0%, #9900cc 100%);
+}
+
+#thermo_10_4 {
+	background: linear-gradient(to bottom, #9900cc 0%, #3333cc 100%);
+}
+
+#thermo_16_10 {
+	background: linear-gradient(to bottom, #3333cc 0%, #33ccff 100%);
+}
+
+#thermo_22_16 {
+	background-color: #00ccff;
+}
+
+#thermo_28_22 {
+	background-color: #00ccff;
+}
+
+#thermo_joint {
+	background-color: #00ccff;
+	height: 30px;
+}
+
+#thermo_bulb {
+	position: absolute;
+	top: 388px;
+	left: 19px;
+	height: 100px;
+	width: 100px;
+	background-color: #00ccff;
+	border-radius: 50%;
+}
+
+#oxygen {
+	position: relative;
+	height: 490px;
+	width: 140px;
+	background-color: #000044;
+	border: 1px solid #00FFFF;
+}
+
+#oxygen_stake {
+	margin: auto;
+	width: 62px;
+	height: 405px; /* 15*27 */
+	border-left: 1px solid #aaaaaa;
+	border-right: 1px solid #aaaaaa;
+}

@@ -1,0 +1,48 @@
+#thermometer {
+	position: relative;
+	width: 100px;
+}
+
+#stake {
+	max-width: 60px;
+	padding-left: 20px;
+}
+
+.thermo {
+	min-height: 100px;
+	min-width: 60px;
+}
+
+#thermo_max {
+	background-color: #ff0000;
+	height: 60px;
+	width: 60px;
+	border-top-left-radius: 50%;
+	border-top-right-radius: 50%;
+}
+
+#thermo1 {
+	background: linear-gradient(to bottom, #ff0000 0%, #9900cc 100%);
+}
+
+#thermo2 {
+	background: linear-gradient(to bottom, #9900cc 0%, #3333cc 100%);
+}
+
+#thermo3 {
+	background: linear-gradient(to bottom, #3333cc 0%, #33ccff 100%);
+}
+
+#thermo4 {
+	background-color: #00ccff;
+}
+
+#thermo5 {
+	background-color: #00ccff;
+}
+
+#thermo6 {
+	background-color: #00ccff;
+	border-radius: 50%;
+	margin-top: 0px;
+}
