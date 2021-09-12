@@ -1,6 +1,6 @@
 // wymiary planszy - przestrzeni na ktorej jest rysowanie
 // globalHeight, globalWidth
-const multiplier = 7; // 3-9 - mnoznik - sluzy do skalowania calosci
+const multiplier = 9; // 3-9 - mnoznik - sluzy do skalowania calosci
 const scale = multiplier / 9;
 const gH = 900 * scale;
 //const gMargin = 0;

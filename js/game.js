@@ -1,4 +1,6 @@
-const boardContainer = document.getElementById('boardContainer');
+import { xzymonLogger } from './utils.js';
+
+const boardContainer = document.getElementById('board');
 const marsBackground = document.getElementById('marsBackground');
 const constraintsBoard = document.getElementById('constraintsBoard');
 const gameBoard = document.getElementById('gameBoard');
@@ -6,19 +8,29 @@ const transientGameBoard = document.getElementById('transientGameBoard');
 const honeyComb = document.getElementById('honeyComb');
 const heading = document.getElementById('mousePositionLabel');
 
-const gameArea = new GameArea(900);
+const factorsBackground = document.getElementById('factorsBackground');
+const actualFactors = document.getElementById('actualFactors');
+const objectFactors = document.getElementById('objectFactors');
+
+const baseDimention = 900;
+const scaleDenominator = 7;
+
+const gameArea = new GameArea(baseDimention, scaleDenominator);
 const gameState = new GameState();
+const globalFactorsArea = new GlobalFactorsArea(baseDimention, scaleDenominator);
 
 const marsAreasLastIndex = 60;
 
 initializeState();
 initializeBoardContainer();
+initializeGlobalFactorsContainer();
 
 boardContainer.addEventListener('mousemove', handleMouseMoveOverGameBoard);
 
+document.addEventListener('DOMContentLoaded', loadMarsBackground);
+document.addEventListener('DOMContentLoaded', loadFactorsBackground);
 
-
-document.addEventListener('DOMContentLoaded', (ev) => {
+function loadMarsBackground(e) {
 	let canvas = marsBackground;
 	let ctx = canvas.getContext('2d');
 	let imgObj = new Image();
@@ -30,7 +42,7 @@ document.addEventListener('DOMContentLoaded', (ev) => {
 		let nh = imgObj.naturalHeight;
 		let snw = nw * gameArea.scale;
 		let snh = nh * gameArea.scale;
-		console.log('Image: Natural');
+		xzymonLogger('Image: Natural');
 		console.log(w);
 		console.log(h);
 		console.log(nw);
@@ -58,7 +70,7 @@ document.addEventListener('DOMContentLoaded', (ev) => {
 	if (gameState.chosenBoardName === gameState.getElysiumName()) {
 		imgObj.src = '../img/elysium_v2.png';
 	}
-});
+}
 
 
 // Event handler
@@ -119,6 +131,7 @@ function markHex(gameArea, canvasLayer, hexId, gameState) {
 		ctx.fillStyle = 'rgba(255, 179, 26, 0.3)';
 		hexagonShape(ctx, hex);
 		ctx.fill();
+		/*
 		let neighbours = gameState.boardState.tiles[hexId].neighbourhood;
 		console.log('markHex neighbours:');
 		console.log(neighbours);
@@ -129,7 +142,7 @@ function markHex(gameArea, canvasLayer, hexId, gameState) {
 			ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
 			hexagonShape(ctx, nbHex);
 			ctx.fill();
-		}
+		}*/
 	}
 }
 
@@ -139,11 +152,12 @@ function unmarkHex(gameArea, canvasLayer, hexId) {
 		let hex = gameArea.hexes[hexId];
 		console.log(`unmarkHex (${hexId})`);
 		ctx.clearRect(hex.xleft, hex.ytop, hex.xright - hex.xleft, hex.ybottom - hex.ytop);
+		/*
 		let neighbours = gameState.boardState.tiles[hexId].neighbourhood;
 		for (let nbIter = 0; nbIter < neighbours.length; nbIter++) {
 			let nbHex = gameArea.hexes[neighbours[nbIter]];
 			ctx.clearRect(nbHex.xleft, nbHex.ytop, nbHex.xright - nbHex.xleft, nbHex.ybottom - nbHex.ytop);
-		}
+		}*/
 	}
 }
 
@@ -185,11 +199,11 @@ function drawConstraints(canvasLayer, gameState) {
 	for (let tileId = 0; tileId < marsAreasLastIndex + 1; tileId++) {
 		let restriction = tiles[tileId].restriction;
 		let toCompare = oceanRestriction();
-		console.log(restriction);
+		//console.log(restriction);
 		if (restriction != null && restriction.category === toCompare.category) {
 			let hex = gameArea.hexes[tileId];
-			console.log(`drawConstraints (${tileId})`);
-			ctx.fillStyle = 'rgba(0, 153, 255, 0.2)';
+			//console.log(`drawConstraints (${tileId})`);
+			ctx.fillStyle = 'rgba(0, 153, 255, 0.25)';
 			hexagonShape(ctx, hex);
 			ctx.fill();
 		}
@@ -206,9 +220,9 @@ function makeTransparent(ctx, w, h) {
 	ctx.fillRect(0,0, w, h);
 }
 
-function GameArea(baseDimention) {
+function GameArea(baseDimention, scaleDenominator) {
 	this.baseDimention = baseDimention;
-	this.scaleDenominator = 7; // 3-9 - mnoznik - sluzy do skalowania calosci
+	this.scaleDenominator = scaleDenominator; // 3-9 - mnoznik - sluzy do skalowania calosci
 	this.scaleNumerator = 9;
 	this.scale = this.scaleDenominator / this.scaleNumerator;
 	this.height = this.baseDimention * this.scale;
@@ -625,6 +639,28 @@ function TileState(tileId, tileName, tileCosts, tileBonuses, tileRestriction) {
 	this.restriction = tileRestriction;
 	this.ownership = new TileOwnership(null, null);
 }
+
+/*
+function createTileState(id, name, costs, bonuses, restriction) {
+	this.id = tileId;
+	this.name = tileName;
+	this.neighbourhood = new Array();
+	this.costs = tileCosts;
+	this.bonuses = tileBonuses;
+	this.restriction = tileRestriction;
+	this.ownership = new TileOwnership(null, null);
+
+	return {
+		id,
+		name,
+		neighbourhood: [],
+		costs,
+		bonuses,
+		restriction,
+		ownership: new TileOwnership()
+	};
+
+}*/
 
 function TileOwnership(playerId, areaKind) {
 	this.owner = playerId;
@@ -1157,6 +1193,7 @@ function setNeighbours(boardState) {
 function GameState() {
 	this.boardState = null;
 	this.chosenBoardName = null;
+	this.globalFactors = null;
 	this.getTharsisName = function() {
 		return 'Tharsis';
 	}
@@ -1178,4 +1215,249 @@ function GameState() {
 		this.chosenBoardName = this.getElysiumName();
 		this.boardState = createElysiumBoardState();
 	}
+	this.initGlobalFactors = function() {
+		this.globalFactors = new GlobalFactorsState();
+	}
 }
+
+function GlobalFactorsArea(baseDimention, scaleDenominator) {
+	this.baseDimention = baseDimention;
+	this.scaleDenominator = scaleDenominator; // 3-9 - mnoznik - sluzy do skalowania calosci
+	this.scaleNumerator = 9;
+	this.heightToWidthFactor = 3;
+	this.heightToRehydrationFactor = 3;
+	this.scale = this.scaleDenominator / this.scaleNumerator;
+	this.height = this.baseDimention * this.scale;
+	this.width = this.baseDimention * this.scale / this.heightToWidthFactor;
+	this.tempOxyIconsHeight = this.width / 4;
+	this.rehydrationIconsHeight = this.height / this.heightToRehydrationFactor;
+	this.rehydrationHeight = this.rehydrationIconsHeight - this.tempOxyIconsHeight;
+	this.rehydrationArea = new PlotArea(0, 0, this.width, this.rehydrationHeight);
+	this.temperatureArea = new PlotArea(0, this.rehydrationIconsHeight, this.width / 2, this.height - this.rehydrationIconsHeight);
+	this.oxygenArea = new PlotArea(this.width / 2, this.rehydrationIconsHeight, this.width / 2, this.height - this.rehydrationIconsHeight);
+}
+
+function PlotArea(x, y, width, height) {
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+}
+
+function initializeGlobalFactorsContainer() {
+	setGFSize(globalFactorsArea, factorsBackground, actualFactors, objectFactors);
+}
+
+function setGFSize(globalFactorsArea, factorsBackground, actualFactors, objectFactors) {
+	factorsBackground.height = globalFactorsArea.height;
+	factorsBackground.width = globalFactorsArea.width;
+
+	actualFactors.height = globalFactorsArea.height;
+	actualFactors.width = globalFactorsArea.width;
+
+	objectFactors.height = globalFactorsArea.height;
+	objectFactors.width = globalFactorsArea.width;
+}
+
+function GlobalFactorsState() {
+	this.temperature = new TemperatureState();
+	this.oxygen = new OxygenState();
+	this.rehydration = new RehydrationState();
+	this.getTemperature = function () {
+		return this.temperature;
+	}
+	this.getOxygen = function () {
+		return this.oxygen;
+	}
+	this.getRehydration = function () {
+		return this.rehydration;
+	}
+}
+
+// TemperatureState, OxygenState && RehydrationState have identical logic
+function TemperatureState() {
+	this.min = -30;
+	this.max = 8;
+	this.current = this.min;
+	this.singleStep = 2;
+	this.maxAvailableLevels = function() {
+		return ((this.max - this.min) / this.singleStep);
+	}
+	this.getCurrentLevel = function () {
+		return this.current;
+	}
+	this.setCurrentLevel = function (level) {
+		if (level >= this.min && level <= this.max) {
+			this.current = level;
+		}
+	}
+	this.advanceOneLevel = function(noOfTimes) {
+		if (this.canAdvanceOneLevel()) {
+			this.performAdvanceOneLevel();
+		}
+	}
+	this.canAdvanceOneLevel = function() {
+		if ((this.max - this.current) / this.singleStep > 0) {
+			return true;
+		}
+		return false;
+	}
+	this.performAdvanceOneLevel = function() {
+		this.current += this.singleStep;
+	}
+}
+
+function OxygenState() {
+	this.min = 0;
+	this.max = 14;
+	this.current = this.min;
+	this.singleStep = 1;
+	this.maxAvailableLevels = function() {
+		return ((this.max - this.min) / this.singleStep);
+	}
+	this.getCurrentLevel = function () {
+		return this.current;
+	}
+	this.setCurrentLevel = function (level) {
+		if (level >= this.min && level <= this.max) {
+			this.current = level;
+		}
+	}
+	this.advanceOneLevel = function(noOfTimes) {
+		if (this.canAdvanceOneLevel()) {
+			this.performAdvanceOneLevel();
+		}
+	}
+	this.canAdvanceOneLevel = function() {
+		if ((this.max - this.current) / this.singleStep > 0) {
+			return true;
+		}
+		return false;
+	}
+	this.performAdvanceOneLevel = function() {
+		this.current += this.singleStep;
+	}
+}
+
+function RehydrationState() {
+	this.min = 0;
+	this.max = 9;
+	this.current = this.min;
+	this.singleStep = 1;
+	this.maxAvailableLevels = function() {
+		return ((this.max - this.min) / this.singleStep);
+	}
+	this.getCurrentLevel = function () {
+		return this.current;
+	}
+	this.setCurrentLevel = function (level) {
+		if (level >= this.min && level <= this.max) {
+			this.current = level;
+		}
+	}
+	this.advanceOneLevel = function(noOfTimes) {
+		if (this.canAdvanceOneLevel()) {
+			this.performAdvanceOneLevel();
+		}
+	}
+	this.canAdvanceOneLevel = function() {
+		if ((this.max - this.current) / this.singleStep > 0) {
+			return true;
+		}
+		return false;
+	}
+	this.performAdvanceOneLevel = function() {
+		this.current += this.singleStep;
+	}
+}
+
+function loadFactorsBackground(e) {
+	drawFactorsBackground(factorsBackground, globalFactorsArea);
+}
+
+function drawFactorsBackground(canvasLayer, factorsArea) {
+	//background image for global factors
+	let ctx = canvasLayer.getContext('2d');
+
+	ctx.fillStyle = 'rgba(0,0,255,0.3)';
+	ctx.fillRect(factorsArea.rehydrationArea.x, factorsArea.rehydrationArea.y, factorsArea.rehydrationArea.width, factorsArea.rehydrationArea.height);
+
+	ctx.fillStyle = 'rgba(0,255,0,0.3)';
+	ctx.fillRect(factorsArea.temperatureArea.x, factorsArea.temperatureArea.y, factorsArea.temperatureArea.width, factorsArea.temperatureArea.height);
+
+	ctx.strokeStyle = 'rgba(0,255,0,1)';
+	// draw gradiented thermometer
+	const thermoStackX = factorsArea.temperatureArea.width / 2;
+	const thermoStackY = factorsArea.temperatureArea.y;
+	const thermoStackW = factorsArea.temperatureArea.width / 2;
+	const thermoStackH = factorsArea.temperatureArea.height;
+	console.log(`thermoStackH = ${thermoStackH}`);
+	drawTemperatureBackgroundStack(canvasLayer, factorsArea.temperatureArea);
+
+	/*
+	const temperatureNoOfSegments = 20;
+	const temperatureSegmentHeight = factorsArea.temperatureArea.height / temperatureNoOfSegments;
+	for (let i = 0; i < temperatureNoOfSegments; i++) {
+		ctx.strokeRect(factorsArea.temperatureArea.width / 2, factorsArea.temperatureArea.y + (temperatureSegmentHeight * i), factorsArea.temperatureArea.width / 2, factorsArea.temperatureArea.y + (temperatureSegmentHeight * (i + 1)));
+	}*/
+
+	ctx.fillStyle = 'rgba(255,0,0,0.3)';
+	ctx.fillRect(factorsArea.oxygenArea.x, factorsArea.oxygenArea.y, factorsArea.oxygenArea.width, factorsArea.oxygenArea.height);
+	/*
+	const oxygenNoOfSegments = 15;
+	const oxygenSegmentHeight = factorsArea.oxygenArea.height / oxygenNoOfSegments;
+	for (let j = 0; j < oxygenNoOfSegments; j++) {
+		let oxyX = factorsArea.oxygenArea.x;
+		let oxyY = factorsArea.oxygenArea.y + (oxygenSegmentHeight * j);
+		let oxyW = factorsArea.oxygenArea.width / 2;
+		let oxyH = factorsArea.oxygenArea.y + (oxygenSegmentHeight * (j + 1));
+		ctx.strokeRect(oxyX, oxyY, oxyW, oxyH);
+		console.log(`OXY: ${oxyX} ${oxyY} ${oxyW} ${oxyH}`);
+	}*/
+}
+
+function drawTemperatureBackgroundStack(canvasLayer, temperatureArea) {
+	const thermoNoOfSegments = 20;
+	let thermoOffscreenCanvas = document.createElement('thermoOffscreenCanvas');
+	thermoOffscreenCanvas.width = temperatureArea.width / 2;
+	thermoOffscreenCanvas.height = temperatureArea.height;
+
+	console.log(`temperatureArea.y = ${temperatureArea.y}`);
+
+	let offscreenCanvasCtx = thermoOffscreenCanvas.getContext('2d');
+	let thermoStackGrad = offscreenCanvasCtx.createLinearGradient(0, 0, thermoOffscreenCanvas.width, thermoOffscreenCanvas.height);
+
+	thermoStackGrad.addColorStop(0, '#ff0000');
+	thermoStackGrad.addColorStop(1 / thermoNoOfSegments, '#ff0000');
+	thermoStackGrad.addColorStop(1 / thermoNoOfSegments, '#ff0000');
+	thermoStackGrad.addColorStop(5 / thermoNoOfSegments, '#9900cc');
+	thermoStackGrad.addColorStop(5 / thermoNoOfSegments, '#9900cc');
+	thermoStackGrad.addColorStop(9 / thermoNoOfSegments, '#3333cc');
+	thermoStackGrad.addColorStop(9 / thermoNoOfSegments, '#3333cc');
+	thermoStackGrad.addColorStop(13 / thermoNoOfSegments, '#33ccff');
+	thermoStackGrad.addColorStop(18 / thermoNoOfSegments, '#33ccff');
+	thermoStackGrad.addColorStop(18 / thermoNoOfSegments, '#33ccff');
+	thermoStackGrad.addColorStop(20 / thermoNoOfSegments, '#33ccff');
+
+	offscreenCanvasCtx.fillStyle = thermoStackGrad;
+	offscreenCanvasCtx.fillRect(0, 0, thermoOffscreenCanvas.width, thermoOffscreenCanvas.height);
+
+	console.log(thermoOffscreenCanvas);
+	console.log(`${temperatureArea.x} ${Math.round(temperatureArea.y)} ${thermoOffscreenCanvas.width} ${thermoOffscreenCanvas.height}`);
+
+	canvasLayer.getContext('2d').drawImage(thermoOffscreenCanvas, temperatureArea.x, Math.round(temperatureArea.y) + 50);
+}
+
+/*
+createSomething = (a=1, b=3, c=6) => {
+	console.log(this);
+	console.log(a);
+	console.log(b);
+	console.log(c);
+	return {
+		a,
+		b,
+		c,
+	}
+}
+ */

@@ -15,7 +15,11 @@ canvas {
 	position: absolute;
 }
 
-#boardContainer {
+.neighbours {
+	display: inline-block;
+}
+
+#board {
 	position: relative;
 	/*
 	background: url("../img/tharsis_v1.png") no-repeat center center;
@@ -40,4 +44,31 @@ canvas {
 
 #marsBackground {
 	z-index: 1;
+}
+
+#game-left {
+	width: 1100px;
+}
+
+#game-right {
+}
+
+#global-factors {
+	position: relative;
+	/*
+	background: url("../img/tharsis_v1.png") no-repeat center center;
+	 */
+}
+
+#objectFactors {
+	z-index: 3;
+}
+
+#actualFactors {
+	z-index: 2;
+}
+
+#factorsBackground {
+	z-index: 1;
+	background-color: #ff00ff;
 }
